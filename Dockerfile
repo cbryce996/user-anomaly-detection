@@ -4,6 +4,10 @@ RUN pip install numpy
 
 RUN pip3 install torch --extra-index-url https://download.pytorch.org/whl/cpu
 
-ADD src/test.py /
+COPY . ./
 
-CMD ["python", "./test.py"]
+RUN chmod -R +x ./scripts
+
+RUN chmod +x ./boot.sh
+
+CMD ./boot.sh
