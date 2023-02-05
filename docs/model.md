@@ -22,12 +22,12 @@ Dec 10 07:07:45 LabSZ sshd[24206]: Received disconnect from 52.80.34.196: 11: By
 
 ### Prepared Data
 
-The raw SSH log is prepared to be used by the machine learning model seperating the features of an interaction between a client and the server.
+The raw SSH log is prepared to be used by the machine learning model seperating the features of an interaction between a client and the server. Entries are seperate by IP.
 
 | Feature | Description | Data Type
 | ------------- | ------------- | ------------- |
-| auth_fails  | Total number of SSH authentication fails by IP  | numerical |
-| user_fails  | Total number of user fails by IP  | numerical |
-| password_fails  | Total number of password fails by IP  | numerical |
-| last_user_fail  | Time since last user fail by IP  | numerical |
-| last_auth_fail  | Time since last SSH authentication fail by IP  | numerical |
+| auth_fails  | Total number of SSH authentication fails  | numerical |
+| user_fails  | Total number of user fails  | numerical |
+| password_fails  | Total number of password fails  | numerical |
+| last_user_fail  | Time since last user fail  | numerical |
+| last_auth_fail  | Time since last SSH authentication fail  | numerical |
