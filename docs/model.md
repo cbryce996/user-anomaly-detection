@@ -20,7 +20,7 @@ Dec 10 07:07:45 LabSZ sshd[24206]: Received disconnect from 52.80.34.196: 11: By
 ```
 
 
-### Prerpared Data
+### Prepared Data
 
 The raw SSH log is prepared to be used by the machine learning model seperating the features of an interaction between a client and the server.
 
