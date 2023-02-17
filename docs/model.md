@@ -8,7 +8,7 @@ The model uses raw SSH logs as a data source, training data has been extracted f
 
 ### Raw Data
 
-Raw SSH log:
+Raw SSH log of a connection event:
 
 ```
 Dec 10 07:07:38 LabSZ sshd[24206]: Invalid user test9 from 52.80.34.196
@@ -24,10 +24,23 @@ Dec 10 07:07:45 LabSZ sshd[24206]: Received disconnect from 52.80.34.196: 11: By
 
 The raw SSH log is prepared to be used by the machine learning model seperating the features of an interaction between a client and the server. Entries are seperate by IP.
 
+**Feture Vector:**
+
+The feature vector is used to provide information to the machine learning model, these represent values which can influence the classification of the result. Each entry is seperated by a unique identity (IP Address).
+
+| Feature | Description | Indication | Data Type
+| ------------- | ------------- | ------------- | ------------- |
+| total_users_attempted  | Total number of invalid unique user attempts | Indication of a possible dictionary attack | numerical |
+| user_password_fails  | Total number of invalid unique user password attempts | Indication of brute forcing a list of known users | numerical |
+| root_password_fails  | Total number of invalid root password attempts | Indication of brute forcing the root pasword | numerical |
+| rdns_lookup_fails  | Total number of failed RDNS lookups | Indication of spoofed DNS | numerical |
+
+
+
+
+
+**Classification**
+
 | Feature | Description | Data Type
 | ------------- | ------------- | ------------- |
-| auth_fails  | Total number of SSH authentication fails  | numerical |
-| user_fails  | Total number of user fails  | numerical |
-| password_fails  | Total number of password fails  | numerical |
-| last_user_fail  | Time since last user fail  | numerical |
-| last_auth_fail  | Time since last SSH authentication fail  | numerical |
+| suspected_attacker  | Indicates whether the data suggests this entry is a possible attacker | boolean |

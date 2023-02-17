@@ -1,5 +1,7 @@
 #!/bin/bash
 
-./scripts/parser.sh
+echo "Initiating parser"
 
-echo "Succesfully parsed SSH"
+exec python src/parser.py
+
+echo "Complete"
