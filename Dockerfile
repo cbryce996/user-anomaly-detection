@@ -2,10 +2,11 @@ FROM python:latest
 
 RUN pip install numpy
 
-RUN pip3 install torch --extra-index-url https://download.pytorch.org/whl/cpu
-RUN pip3 install pandas
+RUN pip install torch --extra-index-url https://download.pytorch.org/whl/cpu
+RUN pip install pandas
 RUN pip install matplotlib
 RUN pip install scikit-learn
+RUN pip install tk
 
 COPY . ./
 

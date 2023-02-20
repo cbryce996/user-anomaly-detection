@@ -1,68 +1,61 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+import tkinter as tk
 
 from sklearn.cluster import DBSCAN
+from sklearn.metrics import make_scorer
+from sklearn.metrics import accuracy_score, precision_score, recall_score
+from sklearn.model_selection import GridSearchCV
 from sklearn.preprocessing import StandardScaler
-from sklearn.preprocessing import normalize
-from sklearn.decomposition import PCA
+
+def read_csv_file(file_path):
+    data = pd.read_csv(file_path)
+    return data
+
+def scale_and_normalize_data(data):
+    scaler = StandardScaler()
+    data_s = scaler.fit_transform(data)
+    data_frame = pd.DataFrame(data_s)
+    return data_frame
+
+def create_labels(data_frame):
+    db_model = DBSCAN(eps = 0.1, min_samples = 4).fit(data_frame)
+    labels = db_model.labels_
+    return labels
+
+def visualize_clusters(data_frame, labels, file_path):
+    fig = plt.figure(figsize =(9, 9))
+    ax = fig.add_subplot(projection="3d")
+
+    ax.scatter(data_frame[0], data_frame[1], data_frame[2], c = labels.astype(float))
+
+    plt.savefig(file_path)
+    plt.show()
+
+def get_clusters_and_anomalies(labels):
+    n_clusters = len(np.unique(labels))-1
+    anomaly = list(labels).count(-1)
+    return n_clusters, anomaly
+
+# File paths
+csv_file_path = "../assets/data/prepared/ssh.csv"
+image_file_path = "../assets/images/scatter.png"
 
 # Read csv file as panda
-data = pd.read_csv("../assets/data/prepared/ssh.csv")
+data = read_csv_file(csv_file_path)
 
 # Scale and normalize data
-scaler = StandardScaler()
-data_s = scaler.fit_transform(data)
-data_norm = pd.DataFrame(normalize(data_s))
+data_frame = scale_and_normalize_data(data)
 
 # Use DBSCAN to create labels dataset
-db_model = DBSCAN(eps = 0.05, min_samples = 10).fit(data_norm)
-labels = db_model.labels_
+labels = create_labels(data_frame)
 
-# Plot histogram
-plt.hist(labels, bins=len(np.unique(labels)), log=True)
-plt.savefig("../assets/images/histogram.png")
-plt.show()
+# Visualize the clusters using matplotlib and save the figure
+visualize_clusters(data_frame, labels, image_file_path)
 
-# Reduce dimentionality
-pca = PCA(n_components = 2)
-data_reduce = pca.fit_transform(data_norm)
-data_reduce = pd.DataFrame(data_reduce)
-data_reduce.columns = list([f'P{i}' for i in range(1, len(data_reduce.columns)+1)])
-
-# Plot scatter
-colours = {}
-colours[0] = 'r'
-colours[1] = 'g'
-colours[2] = 'b'
-colours[3] = 'c'
-colours[4] = 'm'
-colours[-1] = 'k'
-
-cvec = [colours[label] for label in labels]
-
-r = plt.scatter(data_reduce['P1'], data_reduce['P2'], color ='r');
-g = plt.scatter(data_reduce['P1'], data_reduce['P2'], color ='g');
-b = plt.scatter(data_reduce['P1'], data_reduce['P2'], color ='b');
-k = plt.scatter(data_reduce['P1'], data_reduce['P2'], color ='k');
-c = plt.scatter(data_reduce['P1'], data_reduce['P2'], color ='c');
-m = plt.scatter(data_reduce['P1'], data_reduce['P2'], color ='m');
-
-
-plt.figure(figsize =(9, 9))
-plt.scatter(data_reduce['P1'], data_reduce['P2'], c = cvec)
-
-plt.legend((r, g, b, c, m, k), ('Label 0', 'Label 2', 'Label 3', 'Label 4', 'Label 5', 'Label -1'))
-
-plt.savefig("../assets/images/scatter.png")
-plt.show()
-
-# Get clusters
-n_clusters = len(np.unique(labels))-1
-
-# Get anomalies
-anomaly = list(labels).count(-1)
+# Get the number of clusters and anomalies from the labels dataset
+n_clusters, anomaly = get_clusters_and_anomalies(labels)
 
 print (f"Clusters: {n_clusters}")
-print (f"Abnormalities: {anomaly}")
-print (np.unique(labels))
+print (f"Anomalies: {anomaly}")
