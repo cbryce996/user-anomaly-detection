@@ -56,7 +56,7 @@ def write_csv_file(csv_output_path, invalid_login_attempts):
             ])
 
 # Log file path
-log_file_path = "../assets/data/raw/ssh.log"
+log_file_path = "../assets/data/raw/ssh (1).log"
 csv_output_path = "../assets/data/prepared/ssh.csv"
 
 # Read log file
