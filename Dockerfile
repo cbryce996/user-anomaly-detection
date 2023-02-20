@@ -3,6 +3,9 @@ FROM python:latest
 RUN pip install numpy
 
 RUN pip3 install torch --extra-index-url https://download.pytorch.org/whl/cpu
+RUN pip3 install pandas
+RUN pip install matplotlib
+RUN pip install scikit-learn
 
 COPY . ./
 
