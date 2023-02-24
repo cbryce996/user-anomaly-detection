@@ -2,10 +2,10 @@ import plot
 import prepare
 import numpy as np
 import pandas as pd
-from sklearn.cluster import DBSCAN
+from sklearn.cluster import KMeans
 
 def create_labels(data_frame):
-    db_model = DBSCAN(eps = 0.15, min_samples = 2).fit(data_frame)
+    db_model = KMeans(n_clusters = 5, random_state=0, n_init="auto").fit(data_frame)
     labels = db_model.labels_
     return labels
 

@@ -1,3 +1,3 @@
 #!/bin/bash
 
-python ../src/parser.py && python ../src/dbscan.py
+python ../src/parse.py && python ../src/dbscan.py
