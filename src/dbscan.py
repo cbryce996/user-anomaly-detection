@@ -5,18 +5,19 @@ import pandas as pd
 from sklearn.cluster import DBSCAN
 
 def create_labels(data_frame):
-    db_model = DBSCAN(eps = 0.15, min_samples = 2).fit(data_frame)
+    db_model = DBSCAN(eps = 0.5, min_samples = 6).fit(data_frame)
     labels = db_model.labels_
     return labels
 
 def get_clusters_and_anomalies(labels):
     n_clusters = len(np.unique(labels))-1
     anomaly = list(labels).count(-1)
-    return n_clusters, anomaly
+    normal = list(labels).count(0)
+    return n_clusters, anomaly, normal
 
 # File paths
-csv_file_path = "../assets/data/prepared/ssh.csv"
-image_file_path = "../assets/images/scatter.png"
+csv_file_path = "../assets/data/processed/ssh.csv"
+image_file_path = "../assets/images/dbscan_scatter.png"
 
 # Prepare Data
 data = prepare.prepare_data(csv_file_path)
@@ -25,14 +26,18 @@ data = prepare.prepare_data(csv_file_path)
 labels = create_labels(data)
 
 # Get the number of clusters and anomalies from the labels dataset
-n_clusters, anomaly = get_clusters_and_anomalies(labels)
+n_clusters, anomaly, normal = get_clusters_and_anomalies(labels)
 
 # Print clusters and anomalies
 print (f"Clusters: {n_clusters}")
 print (f"Anomalies: {anomaly}")
+print (f"Normal: {normal}")
 
 df_clusters = pd.DataFrame(labels)
-df_clusters.to_csv("../assets/data/prepared/clusters.csv", index=False)
+
+output = pd.read_csv(csv_file_path)
+output['cluster'] = df_clusters
+output.to_csv("../assets/data/processed/dbscan.csv", index=False)
 
 # Plot the resulting labels
 plot.visualize_clusters(data, labels, image_file_path)

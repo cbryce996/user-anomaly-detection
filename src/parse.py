@@ -6,10 +6,9 @@ def read_log_file(log_file_path):
     # Regex for finding lines
     failed_username_regex = r"Invalid user (\S+) from (\S+)"
     failed_password_regex = r"Failed password for (\S+) from (\S+) port \d+ ssh\d+"
-    failed_rdns_regex = r"Address (\S+) maps to (\S+), but this does not map back to the address - POSSIBLE BREAK-IN ATTEMPT!"
 
     # Invalid logins
-    invalid_login_attempts = defaultdict(lambda: {"users": Counter(), "passwords": Counter(), "rdns": Counter()})
+    invalid_login_attempts = defaultdict(lambda: {"users": Counter(), "passwords": Counter()})
 
     # Open log file
     with open(log_file_path, "r") as log:
@@ -31,17 +30,10 @@ def read_log_file(log_file_path):
 
                 invalid_login_attempts[source_ip_address]["passwords"].update([username])
 
-            # Find failed rdns
-            match = re.search(failed_rdns_regex, line)
-            if match:
-                source_ip_address, hostname = match.groups()
-
-                invalid_login_attempts[source_ip_address]["rdns"].update([hostname])
-
     return invalid_login_attempts
 
 def write_csv_file(csv_output_path, invalid_login_attempts):
-    header = ["total_users_attempted", "user_password_fails", "rdns_lookup_fails"]
+    header = ["total_users_attempted", "user_password_fails"]
 
     with open(csv_output_path, "w", encoding="UTF8") as file:
         writer = csv.writer(file)
@@ -51,13 +43,12 @@ def write_csv_file(csv_output_path, invalid_login_attempts):
         for ip, data in invalid_login_attempts.items():
             writer.writerow([
                 sum(data["users"].values()),
-                sum(data["passwords"].values()),
-                sum(data["rdns"].values())
+                sum(data["passwords"].values())
             ])
 
 # Log file path
 log_file_path = "../assets/data/raw/ssh.log"
-csv_output_path = "../assets/data/prepared/ssh.csv"
+csv_output_path = "../assets/data/processed/ssh.csv"
 
 # Read log file
 invalid_login_attempts = read_log_file(log_file_path)

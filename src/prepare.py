@@ -11,10 +11,11 @@ def scale_and_normalize_data(data):
     normalizer = Normalizer()
     data_s = scaler.fit_transform(data)
     data_n = normalizer.fit_transform(data_s)
-    data_frame = pd.DataFrame(data_n)
+    data_frame = pd.DataFrame(data_s, columns=scaler.get_feature_names_out(data.columns))
     return data_frame
 
 def prepare_data(file_path):
     data = read_csv_file(file_path)
     prepared_data = scale_and_normalize_data(data)
+    print (prepared_data)
     return prepared_data
