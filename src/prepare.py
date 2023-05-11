@@ -1,31 +1,27 @@
-import logistic_regression as lr
-import support_vector_machine as svm
+import feature_selection as fs
 import pandas as pd
-from sklearn.preprocessing import OneHotEncoder, normalize
+from pathlib import Path
 
 # Import data
-test = pd.read_csv('../assets/data/UNSW-NB15/UNSW_NB15_testing-set.csv')
-train = pd.read_csv('../assets/data/UNSW-NB15/UNSW_NB15_training-set.csv')
+ds = pd.read_csv('../assets/data/UNSW-NB15/UNSW_NB15_training-set.csv')
 
-# Remove missing/unwanted columns
-test = test.loc[:, test.columns!='attack_cat']
-train = train.loc[:, train.columns!='attack_cat']
+# Split data X
+ds_X = ds.iloc[:,:-1]
+
+# Split data y
+ds_y = ds.iloc[:,-1]
+
+# Drop unwanted columns
+ds_X.drop(['attack_cat'], axis=1, inplace=True)
+
+# Clean data
+ds_X.fillna(0, inplace=True)
 
 # Encode categorical data
-objs = test.select_dtypes(include=['object']).copy()
-
+objs = ds_X.select_dtypes(include=['object']).copy()
 for column in objs:
-    test[column] = test[column].astype('category')
-    test[column] = test[column].cat.codes
+    ds_X[column] = ds_X[column].astype('category')
+    ds_X[column] = ds_X[column].cat.codes
 
-objs = train.select_dtypes(include=['object']).copy()
-
-for column in objs:
-    train[column] = train[column].astype('category')
-    train[column] = train[column].cat.codes
-
-# Scale
-train_X = normalize(train.iloc[:,:-1])
-test_X = normalize(test.iloc[:,:-1])
-
-lr.run_logistic_regression(train_X, train.iloc[:,-1], test_X, test.iloc[:,-1])
+# Perform feature selection
+fs.run(ds_X, ds_y)
