@@ -1,3 +1,3 @@
 #!/bin/bash
 
-python ../src/prepare.py
+python ../src/run.py
