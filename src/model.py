@@ -1,55 +1,64 @@
-import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
-from kneed import KneeLocator
-from numpy import mean
-from sklearn.preprocessing import StandardScaler, Normalizer
-from sklearn.feature_selection import SelectKBest, f_classif
-from sklearn.pipeline import Pipeline
-from sklearn.tree import DecisionTreeClassifier
-from sklearn.svm import SVC
-from sklearn.neighbors import KNeighborsClassifier
-from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import log_loss, accuracy_score, precision_score, recall_score, confusion_matrix, roc_curve, f1_score, roc_auc_score
+# External inputs
+from sklearn.metrics import accuracy_score, roc_curve, roc_auc_score
 
-# Fit model
-def fit_model(model, X, y):
-    return model.fit(X, y)
+# Returns roc curves for train/test data
+def build_roc_curve(X_train, y_train, X_test, y_test, classifier):
+    # Fit model
+    classifier.fit(X_train, y_train)
 
-# Predict model and score using loss, accuracy, precision, recall, f1
-def validate_model(model, X, y):
-    y_pred = model.predict(X)
-    prob = model.predict_proba(X)
-    pred = prob[:,1]
-    fp, tp, _ = roc_curve(y, pred)
-    score = {
-        'loss': np.round(log_loss(y, y_pred), 3),
-        'accuracy': np.round(accuracy_score(y, y_pred), 3),
-        'precision': np.round(precision_score(y, y_pred), 3),
-        'recall': np.round(recall_score(y, y_pred), 3),
-        'f1': np.round(f1_score(y, y_pred), 3),
-        'roc': {
-            'fp': fp,
-            'tp': tp
-        },
-        'auc': round(roc_auc_score(y, pred), 3),
-        'matrix': confusion_matrix(y, y_pred)
+    y_train_pred = classifier.predict_proba(X_train)[:,1]
+    fpr, tpr, _ = roc_curve(y_train, y_train_pred)
+    train_roc_curve = {
+        'X': fpr,
+        'Y': tpr,
+        'Label': round(roc_auc_score(y_train, y_train_pred), 3)
     }
-    return score
 
-# Select K best features using ANOVA coef
-def select_k_best(X, y, k):
-    kbest = SelectKBest(score_func=f_classif, k=k)
-    kbest.fit(X, y)
-    scores = {
-        'columns': kbest.get_support(indices=True),
-        'scores': kbest.scores_
+    y_test_pred = classifier.predict_proba(X_test)[:,1]
+    fpr, tpr, _ = roc_curve(y_test, y_test_pred)
+    test_roc_curve = {
+        'X': fpr,
+        'Y': tpr,
+        'Label': round(roc_auc_score(y_test, y_test_pred), 3)
     }
-    return scores
 
-# Build pipeline for model
-def build_pipeline(algo):
-    return Pipeline(steps=[
-        ('scale', StandardScaler()),
-        ('algo', algo)
-    ])
+    return train_roc_curve, test_roc_curve
+
+# Searches parameters and returns accuracy scores on train/test data
+def param_search(X_train, y_train, X_test, y_test, classifier, parameter):
+    train_curve = {}
+    test_curve = {}
+
+    train_scores = []
+    test_scores = []
+    
+    for name, values in parameter.items():
+        for value in values:
+            # Set params
+            classifier.set_params(**{
+                name: value
+            })
+
+            # Fit model
+            classifier.fit(X_train, y_train)
+
+            # Train score
+            y_train_pred = classifier.predict(X_train)
+            train_scores.append(round(accuracy_score(y_train, y_train_pred), 3))
+            
+            # Test score
+            y_test_pred = classifier.predict(X_test)
+            test_scores.append(round(accuracy_score(y_test, y_test_pred), 3))
+
+        train_curve['X'] = values
+        test_curve['X'] = values
+
+    train_curve['Y'] = train_scores
+    train_curve['Label'] = max(train_scores)
+
+    test_curve['Y'] = test_scores
+    test_curve['Label'] = max(test_scores)
+
+    print(train_curve)
+    
+    return train_curve, test_curve
