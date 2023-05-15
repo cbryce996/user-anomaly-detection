@@ -67,15 +67,19 @@ ds_train_X = ds_train_X.iloc[:,columns]
 # Plot selected correlation matrix
 plt.plot_heatmap(ds_train_X.corr(), 'features_selected', 'Correlation Matrix - Pearson', (8, 6))
 
-####################
-# Model Evaluation #
-####################
+# Scale features
+ds_train_X = StandardScaler().fit_transform(ds_train_X)
+ds_test_X = StandardScaler().fit_transform(ds_test_X)
+
+######################
+# Model Optimization #
+######################
 
 # Define algorithms
 algos = {
     'Naive Bayes': GaussianNB(),
     'Random Forest': RandomForestClassifier(),
-    'Logistic Regression': LogisticRegression(n_jobs=-1),
+    'Logistic Regression': LogisticRegression(n_jobs=-1, max_iter=5000, solver='lbfgs'),
     'Decision Tree Classifier': DecisionTreeClassifier(),
     'K-Nearest Neighbor': KNeighborsClassifier(n_jobs=-1)
 }
@@ -94,10 +98,10 @@ plt.plot_line(lines, 'defaults', 'Reveiver Operating Characteristic (ROC)', (8, 
 # Define params
 params = {
     #'Naive Bayes': {}, # No params for Naive Bayes
-    'Random Forest': {'max_depth': [1, 2, 3, 4]},
-    'Logistic Regression': {'C': [0.1, 0.1, 10, 100]},
-    'Decision Tree Classifier': {'max_depth': [5,10,20,40]},
-    'K-Nearest Neighbor': {'n_neighbors': [5,10,20,40]}
+    'Random Forest': {'max_depth': [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]},
+    'Logistic Regression': {'C': [0.001, 0.01, 0.1, 1]},
+    'Decision Tree Classifier': {'max_depth': [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]},
+    'K-Nearest Neighbor': {'n_neighbors': [80, 120, 160, 200, 240, 280]}
 }
 
 # Search parameters
@@ -107,4 +111,27 @@ for name, param in params.items():
     train_curves, test_curves = md.param_search(ds_train_X, ds_train_y, ds_test_X, ds_test_y, model, param)
     lines['Training Set'] = train_curves
     lines['Testing Set'] = test_curves
-    plt.plot_line(lines, 'params_%s' % (name), 'Parameter Search - %s' % (name), (8, 6), 'Parameter', 'Accuracy', 'Accuracy')
+    plt.plot_line(lines, 'params_%s' % (name), 'Parameter Search - %s' % (name), (8, 6), next(iter(param)), 'Accuracy', 'Accuracy')
+
+####################
+# Model Evaluation #
+####################
+
+# Define optimized algorithms
+algos = {
+    'Naive Bayes': GaussianNB(),
+    'Random Forest': RandomForestClassifier(max_depth=3),
+    'Logistic Regression': LogisticRegression(n_jobs=-1, max_iter=5000, solver='lbfgs', C=0.05),
+    'Decision Tree Classifier': DecisionTreeClassifier(max_depth=3),
+    'K-Nearest Neighbor': KNeighborsClassifier(n_jobs=-1, n_neighbors=205)
+}
+
+
+# Plot ROC using best params
+lines = {}
+for name, model in algos.items():
+    train_roc_curve, test_roc_curve = md.build_roc_curve(ds_train_X, ds_train_y, ds_test_X, ds_test_y, model)
+    lines[name] = test_roc_curve
+
+# Plot ROC using best params
+plt.plot_line(lines, 'optimized', 'Reveiver Operating Characteristic (ROC)', (8, 6), 'False Positive Rate', 'True Positive Rate', 'AUC')
