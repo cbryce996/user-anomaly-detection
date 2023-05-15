@@ -1,7 +1,6 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
-from model import select_k_best, fit_model, validate_model
 
 sns.set_theme(style='whitegrid')
 
@@ -27,22 +26,22 @@ def plot_bar(data):
     plt.clf()
     fig, (ax1, ax2)=plt.subplots(1,2, figsize=(20, 6))
     palette=sns.color_palette('muted', n_colors=len(data.index))
-    sns.barplot(data=data, x=data.index, y='Loss', palette=palette, ax=ax1)
+    sns.barplot(data=data, x=data.index, y='Loss', ax=ax1)
     ax1.title.set_text('Test Data Prediction - Loss')
-    sns.barplot(data=data, x=data.index, y='Accuracy', palette=palette, ax=ax2)
+    sns.barplot(data=data, x=data.index, y='Accuracy', ax=ax2)
     ax2.title.set_text('Test Data Prediction - Accuracy')
     plt.tight_layout()
     plt.savefig('../assets/images/box_plot_loss.png')
 
-def plot_roc_curve(data):
+def plot_roc_curve(data, name, title):
     plt.clf()
     plt.figure(figsize=(8,6))
     palette=sns.color_palette('muted', n_colors=len(data.index))
     i=0
     for algo in data.index:
-        sns.lineplot(data=data.loc[algo], x='False Positive', y='True Positive', color=palette[i], label=algo)
+        sns.lineplot(data=data.loc[algo], x='False Positive', y='True Positive', color=palette[i], label='%s - AUC: %s' % (algo, "{0:.3f}".format(data.loc[algo]['AUC'])))
         i+=1
     plt.legend()
-    plt.title('Receiver Operating Characteristic (ROC)')
+    plt.title(title)
     plt.tight_layout()
-    plt.savefig('../assets/images/roc_curve.png')
+    plt.savefig('../assets/images/roc_curve_%s.png' % (name))
